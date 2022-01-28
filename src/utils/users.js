@@ -8,8 +8,6 @@ const addUser = ({
     username = username.trim().toLowerCase()
     room = room.trim().toLowerCase()
 
-    console.log("IN USER.JS... ", username, room)
-
     if (!username || !room) {
         return {
             error: 'Username and room are required!'

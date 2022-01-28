@@ -42,31 +42,32 @@ io.on('connection', (socket) => {
             room
         })
 
-        console.log("USER: ", user, error)
-
-        if (!user) {
-            console.log("IN ERROR...", error)
+        if (error) {
             return callback(error)
         }
-        console.log("AFTER ERROR BLOCK: ", user)
         socket.join(user.room)
-        console.log("AFTER JOIN ROOM")
-        socket.broadcast.to(user.room).emit('message', generateMessage(`${user.username} user has joined!!`))
+        socket.broadcast.to(user.room).emit('message', generateMessage('Admin', `${user.username} user has joined!!`))
+        io.to(user.room).emit('roomData', {
+            room: user.room,
+            users: getUsersInRoom(user.room)
+        })
         callback()
     })
 
     socket.on('message', (msg, callback) => {
         const filter = new Filter()
+        const user = getUser(socket.id)
 
         if (filter.isProfane(msg)) {
             return callback('Profanity is not allowed!')
         }
-        io.to('as').emit('message', generateMessage(msg))
+        io.to(user.room).emit('message', generateMessage(user.username, msg))
         callback()
     })
 
-    socket.on('send location', (coords, callback) => {
-        io.emit('send location', generateLocationMessage(`https://google.com/maps?q=${coords.latitude},${coords.longitude}`))
+    socket.on('sendLocation', (coords, callback) => {
+        const user = getUser(socket.id)
+        io.to(user.room).emit('locationMessage', generateLocationMessage(user.username, `https://google.com/maps?q=${coords.latitude},${coords.longitude}`))
         callback()
     })
 
@@ -74,7 +75,11 @@ io.on('connection', (socket) => {
         const user = removeUser(socket.id)
 
         if (user) {
-            io.to(user.room).emit('message', generateMessage(`${user.username} has left`))
+            io.to(user.room).emit('message', generateMessage('Admin', `${user.username} has left`))
+            io.to(user.room).emit('roomData', {
+                room: user.room,
+                users: getUsersInRoom(user.room)
+            })
         }
 
     })

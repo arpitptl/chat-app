@@ -10,6 +10,7 @@ const sendLocationButton = document.querySelector('#send-location')
 //Templates
 const messageTemplate = document.querySelector('#message-template').innerHTML
 const locationTemplate = document.querySelector('#location-template').innerHTML
+const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 
 //Options
 var search = location.search.substring(1);
@@ -38,11 +39,12 @@ messageForm.addEventListener('submit', (e) => {
     }
 })
 
-socket.on('message', (msg) => {
+socket.on('message', (message) => {
 
     const html = Mustache.render(messageTemplate, {
-        message: msg.text,
-        createdAt: moment(msg.createdAt).format("h:mm a")
+        username: message.username,
+        message: message.text,
+        createdAt: moment(message.createdAt).format("h:mm a")
     })
     messages.insertAdjacentHTML('beforeend', html)
 })
@@ -55,9 +57,7 @@ sendLocationButton.addEventListener('click', () => {
     }
 
     navigator.geolocation.getCurrentPosition((position) => {
-        console.log(position.coords.latitude)
-        console.log(position.coords.longitude)
-        socket.emit('send location', {
+        socket.emit('sendLocation', {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
         }, () => {
@@ -67,10 +67,11 @@ sendLocationButton.addEventListener('click', () => {
     })
 })
 
-socket.on('send location', (location) => {
+socket.on('locationMessage', (message) => {
     const html = Mustache.render(locationTemplate, {
-        location: location.url,
-        createdAt: moment(location.createdAt).format("h:mm a")
+        username: message.username,
+        location: message.url,
+        createdAt: moment(message.createdAt).format("h:mm a")
     })
     messages.insertAdjacentHTML('beforeend', html)
 })
@@ -84,4 +85,16 @@ socket.emit('join', {
         alert(error)
         location.href = '/'
     }
+})
+
+socket.on('roomData', ({
+    room,
+    users
+}) => {
+    console.log(users)
+    const html = Mustache.render(sidebarTemplate, {
+        room,
+        users
+    })
+    document.querySelector('#sidebar').innerHTML = html
 })
