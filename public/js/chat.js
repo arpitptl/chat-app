@@ -30,7 +30,8 @@ form.addEventListener('submit', (e) => {
 socket.on('chat message', (msg) => {
 
     const html = Mustache.render(messageTemplate, {
-        message: msg
+        message: msg.text,
+        createdAt: moment(msg.createdAt).format("h:mm a")
     })
     messages.insertAdjacentHTML('beforeend', html)
     // const item = document.createElement('li')
@@ -40,9 +41,11 @@ socket.on('chat message', (msg) => {
 })
 
 socket.on('user message', (msg) => {
-    const item = document.createElement('li')
-    item.textContent = msg
-    messages.append(item)
+    const html = Mustache.render(messageTemplate, {
+        message: msg.text,
+        createdAt: moment(msg.createdAt).format("h:mm a")
+    })
+    messages.insertAdjacentHTML('beforeend', html)
     // window.scrollTo(0, document.body.scrollHeight)
 })
 
@@ -68,10 +71,8 @@ sendLocationButton.addEventListener('click', () => {
 
 socket.on('send location', (location) => {
     const html = Mustache.render(locationTemplate, {
-        location
+        location: location.url,
+        createdAt: moment(location.createdAt).format("h:mm a")
     })
     messages.insertAdjacentHTML('beforeend', html)
-    // const item = document.createElement('a')
-    // item.textContent = msg
-    // messages.append(item)
 })

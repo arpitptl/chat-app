@@ -3,6 +3,10 @@ const socketio = require('socket.io')
 const http = require('http')
 const express = require('express')
 const Filter = require('bad-words')
+const {
+    generateMessage,
+    generateLocationMessage
+} = require('./utils/messages')
 
 const app = express()
 
@@ -18,7 +22,7 @@ const publicDirectoryPath = path.join(__dirname, '../public')
 app.use(express.static(publicDirectoryPath))
 
 io.on('connection', (socket) => {
-    socket.broadcast.emit('user message', "New user has joined!!")
+    socket.broadcast.emit('user message', generateMessage("New user has joined!!"))
 
     socket.on('chat message', (msg, callback) => {
         const filter = new Filter()
@@ -26,17 +30,17 @@ io.on('connection', (socket) => {
         if (filter.isProfane(msg)) {
             return callback('Profanity is not allowed!')
         }
-        io.emit('chat message', msg)
+        io.emit('chat message', generateMessage(msg))
         callback()
     })
 
     socket.on('send location', (coords, callback) => {
-        io.emit('send location', `https://google.com/maps?q=${coords.latitude},${coords.longitude}`)
+        io.emit('send location', generateLocationMessage(`https://google.com/maps?q=${coords.latitude},${coords.longitude}`))
         callback()
     })
 
     socket.on('disconnect', () => {
-        io.emit('user message', "A user has left")
+        io.emit('user message', generateMessage("A user has left"))
     })
 })
 
