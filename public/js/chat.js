@@ -19,7 +19,6 @@ const {
     room
 } = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
 
-console.log(JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}'))
 
 messageForm.addEventListener('submit', (e) => {
     e.preventDefault()
@@ -107,7 +106,6 @@ socket.emit('join', {
     room
 }, (error) => {
     if (error) {
-        console.log(error)
         alert(error)
         location.href = '/'
     }
@@ -117,7 +115,6 @@ socket.on('roomData', ({
     room,
     users
 }) => {
-    console.log(users)
     const html = Mustache.render(sidebarTemplate, {
         room,
         users

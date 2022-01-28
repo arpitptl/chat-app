@@ -178,7 +178,13 @@ button:disabled {
 }
 
 .users {
-    list-style-type: none;
+    margin-left: 20px;
+    list-style: inside;
+    list-style-image: url('https://ca.slack-edge.com/T02TXN9KYC9-U02V00CNY2V-g3cb6212a3d4-24');
     font-weight: 300;
     padding: 12px 24px 0 24px;
+}
+
+.username {
+    margin: 5px;
 }
