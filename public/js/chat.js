@@ -1,21 +1,32 @@
 const socket = io()
 
-const messageForm = document.querySelector("#form")
-const messageFormInput = document.querySelector("#input")
+// Elements
+const messageForm = document.querySelector("#message-form")
+const messageFormInput = document.querySelector("#message-input")
 const messageFormButton = document.querySelector("#send-message")
 const messages = document.querySelector("#messages")
 const sendLocationButton = document.querySelector('#send-location')
 
+//Templates
 const messageTemplate = document.querySelector('#message-template').innerHTML
 const locationTemplate = document.querySelector('#location-template').innerHTML
 
-form.addEventListener('submit', (e) => {
+//Options
+var search = location.search.substring(1);
+const {
+    username,
+    room
+} = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
+
+console.log(JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}'))
+
+messageForm.addEventListener('submit', (e) => {
     e.preventDefault()
 
     messageFormButton.setAttribute('disabled', 'disabled')
 
     if (messageFormInput.value) {
-        socket.emit('chat message', messageFormInput.value, (error) => {
+        socket.emit('message', messageFormInput.value, (error) => {
             messageFormButton.removeAttribute('disabled')
             messageFormInput.value = ''
             messageFormInput.focus()
@@ -27,26 +38,13 @@ form.addEventListener('submit', (e) => {
     }
 })
 
-socket.on('chat message', (msg) => {
+socket.on('message', (msg) => {
 
     const html = Mustache.render(messageTemplate, {
         message: msg.text,
         createdAt: moment(msg.createdAt).format("h:mm a")
     })
     messages.insertAdjacentHTML('beforeend', html)
-    // const item = document.createElement('li')
-    // item.textContent = msg
-    // messages.appendChild(item)
-    // window.scrollTo(0, document.body.scrollHeight)
-})
-
-socket.on('user message', (msg) => {
-    const html = Mustache.render(messageTemplate, {
-        message: msg.text,
-        createdAt: moment(msg.createdAt).format("h:mm a")
-    })
-    messages.insertAdjacentHTML('beforeend', html)
-    // window.scrollTo(0, document.body.scrollHeight)
 })
 
 sendLocationButton.addEventListener('click', () => {
@@ -75,4 +73,9 @@ socket.on('send location', (location) => {
         createdAt: moment(location.createdAt).format("h:mm a")
     })
     messages.insertAdjacentHTML('beforeend', html)
+})
+
+socket.emit('join', {
+    username,
+    room
 })

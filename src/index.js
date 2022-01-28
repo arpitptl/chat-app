@@ -22,15 +22,23 @@ const publicDirectoryPath = path.join(__dirname, '../public')
 app.use(express.static(publicDirectoryPath))
 
 io.on('connection', (socket) => {
-    socket.broadcast.emit('user message', generateMessage("New user has joined!!"))
 
-    socket.on('chat message', (msg, callback) => {
+    socket.on('join', ({
+        username,
+        room
+    }) => {
+        socket.join(room)
+
+        io.to(room).emit('message', generateMessage(`${username} user has joined!!`))
+    })
+
+    socket.on('message', (msg, callback) => {
         const filter = new Filter()
 
         if (filter.isProfane(msg)) {
             return callback('Profanity is not allowed!')
         }
-        io.emit('chat message', generateMessage(msg))
+        io.to('Testing').emit('message', generateMessage(msg))
         callback()
     })
 
@@ -40,7 +48,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('disconnect', () => {
-        io.emit('user message', generateMessage("A user has left"))
+        io.emit('message', generateMessage("A user has left"))
     })
 })
 
