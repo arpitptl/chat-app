@@ -7,6 +7,12 @@ const {
     generateMessage,
     generateLocationMessage
 } = require('./utils/messages')
+const {
+    addUser,
+    removeUser,
+    getUser,
+    getUsersInRoom
+} = require('./utils/users')
 
 const app = express()
 
@@ -26,10 +32,27 @@ io.on('connection', (socket) => {
     socket.on('join', ({
         username,
         room
-    }) => {
-        socket.join(room)
+    }, callback) => {
+        const {
+            error,
+            user
+        } = addUser({
+            id: socket.id,
+            username,
+            room
+        })
 
-        io.to(room).emit('message', generateMessage(`${username} user has joined!!`))
+        console.log("USER: ", user, error)
+
+        if (!user) {
+            console.log("IN ERROR...", error)
+            return callback(error)
+        }
+        console.log("AFTER ERROR BLOCK: ", user)
+        socket.join(user.room)
+        console.log("AFTER JOIN ROOM")
+        socket.broadcast.to(user.room).emit('message', generateMessage(`${user.username} user has joined!!`))
+        callback()
     })
 
     socket.on('message', (msg, callback) => {
@@ -38,7 +61,7 @@ io.on('connection', (socket) => {
         if (filter.isProfane(msg)) {
             return callback('Profanity is not allowed!')
         }
-        io.to('Testing').emit('message', generateMessage(msg))
+        io.to('as').emit('message', generateMessage(msg))
         callback()
     })
 
@@ -48,7 +71,12 @@ io.on('connection', (socket) => {
     })
 
     socket.on('disconnect', () => {
-        io.emit('message', generateMessage("A user has left"))
+        const user = removeUser(socket.id)
+
+        if (user) {
+            io.to(user.room).emit('message', generateMessage(`${user.username} has left`))
+        }
+
     })
 })
 

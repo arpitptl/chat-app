@@ -78,4 +78,10 @@ socket.on('send location', (location) => {
 socket.emit('join', {
     username,
     room
+}, (error) => {
+    if (error) {
+        console.log(error)
+        alert(error)
+        location.href = '/'
+    }
 })
