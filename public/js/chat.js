@@ -39,6 +39,30 @@ messageForm.addEventListener('submit', (e) => {
     }
 })
 
+const autoScroll = () => {
+    // New message element
+    const newMessage = messages.lastElementChild
+
+    // get the height of new message
+    const newMessageStyle = getComputedStyle(newMessage)
+    const newMessageMargin = parseInt(newMessageStyle.marginBottom)
+    const newMessageHt = newMessage.offsetHeight + newMessageMargin
+
+    // visible height
+    const visibleHt = messages.offsetHeight
+
+    // Height of messages container
+    const containerHt = messages.scrollHeight
+
+    //How fat have I scrolled
+    const scrollOffset = messages.scrollTop + visibleHt
+
+    if (containerHt - newMessageHt <= scrollOffset) {
+        messages.scrollTop = messages.scrollHeight
+    }
+
+}
+
 socket.on('message', (message) => {
 
     const html = Mustache.render(messageTemplate, {
@@ -47,6 +71,7 @@ socket.on('message', (message) => {
         createdAt: moment(message.createdAt).format("h:mm a")
     })
     messages.insertAdjacentHTML('beforeend', html)
+    autoScroll()
 })
 
 sendLocationButton.addEventListener('click', () => {
@@ -74,6 +99,7 @@ socket.on('locationMessage', (message) => {
         createdAt: moment(message.createdAt).format("h:mm a")
     })
     messages.insertAdjacentHTML('beforeend', html)
+    autoScroll()
 })
 
 socket.emit('join', {
